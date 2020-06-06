@@ -13,7 +13,7 @@ const name = prompt("Username?");
 ws.onopen = function(evt) {
   console.log("open", evt);
 
-  let data = {type: "join", name: name};
+  let data = { type: "join", name: name };
   ws.send(JSON.stringify(data));
 };
 
@@ -23,7 +23,27 @@ ws.onopen = function(evt) {
 ws.onmessage = function(evt) {
   console.log("message", evt);
 
-  let msg = JSON.parse(evt.data);
+  const msg = JSON.parse(evt.data);
+  displayMessage(msg);
+
+};
+
+
+/** called on error; logs it. */
+
+ws.onerror = function(evt) {
+  console.error(`err ${evt}`);
+};
+
+
+/** called on connection-closed; logs it. */
+
+ws.onclose = function(evt) {
+  console.log("close", evt);
+};
+
+
+function displayMessage(msg) {
   let item;
 
   if (msg.type === "note") {
@@ -34,35 +54,54 @@ ws.onmessage = function(evt) {
     item = $(`<li><b>${msg.name}: </b>${msg.text}</li>`);
   }
 
+  else if (msg.type === "command") {
+    item = $(`<li><b>${msg.name}: </b>${msg.text}</li>`).css('color', 'grey');
+  }
+
+  else if (msg.type === "error") {
+    item = $(`<li><b>${msg.name}: </b>${msg.text}</li>`).css('color', 'red');
+  }
+
   else {
     return console.error(`bad message: ${msg}`);
   }
 
   $('#messages').append(item);
-};
+}
 
 
-/** called on error; logs it. */
+function processMessage(input) {
+  if (!input.startsWith("/")) {
+    return { type: "chat", text: input };
+  }
 
-ws.onerror = function (evt) {
-  console.error(`err ${evt}`);
-};
+  const command = input.split(' ')[0];
+  switch (command) {
+    case "/joke":
+      return { type: "joke" };
 
-
-/** called on connection-closed; logs it. */
-
-ws.onclose = function (evt) {
-  console.log("close", evt);
-};
+    default:
+      console.error(`No such command, ${command}.`);
+      displayMessage({
+        type: "error",
+        name: "ERROR",
+        text: `No such command, ${command}.`
+      });
+      return null;
+  }
+}
 
 
 /** send message when button pushed. */
 
-$('form').submit(function (evt) {
+$('form').submit(function(evt) {
   evt.preventDefault();
 
-  let data = {type: "chat", text: $("#m").val()};
-  ws.send(JSON.stringify(data));
+  // let data = { type: "chat", text: $("#m").val() };
+  const data = processMessage($("#m").val());
+  if (data) {
+    ws.send(JSON.stringify(data));
+  }
 
   $('#m').val('');
 });

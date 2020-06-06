@@ -60,6 +60,7 @@ app.ws('/chat/:roomName', function(ws, req, next) {
  * */
 
 app.get('/:roomName', function(req, res, next) {
+  // send file instead of rendering template to avoid dependency
   res.sendFile(`${__dirname}/chat.html`);
 });
 

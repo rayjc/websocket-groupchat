@@ -1,5 +1,7 @@
 /** Functionality related to chatting. */
 
+const axios = require("axios");
+
 // Room is an abstraction of a chat channel
 const Room = require('./Room');
 
@@ -47,6 +49,26 @@ class ChatUser {
     });
   }
 
+  /** handle a joke command: request joke and send back to client */
+
+  handleJoke() {
+    axios.get("https://icanhazdadjoke.com", { headers: { accept: 'application/json' } })
+      .then(res => {
+        this.send(JSON.stringify({
+          name: 'Server',
+          type: 'command',
+          text: res.data.joke,
+        }));
+      })
+      .catch(() => {
+        this.send(JSON.stringify({
+          name: 'Server',
+          type: 'command',
+          text: "Cannot come up with a joke at the moment; please try again later."
+        }));
+      });
+  }
+
   /** Handle messages from client:
    *
    * - {type: "join", name: username} : join
@@ -54,11 +76,24 @@ class ChatUser {
    */
 
   handleMessage(jsonData) {
-    let msg = JSON.parse(jsonData);
+    const msg = JSON.parse(jsonData);
 
-    if (msg.type === 'join') this.handleJoin(msg.name);
-    else if (msg.type === 'chat') this.handleChat(msg.text);
-    else throw new Error(`bad message: ${msg.type}`);
+    switch (msg.type) {
+      case "join":
+        this.handleJoin(msg.name);
+        break;
+
+      case "chat":
+        this.handleChat(msg.text);
+        break;
+
+      case "joke":
+        this.handleJoke();
+        break;
+
+      default:
+        throw new Error(`bad message: ${msg.type}`);
+    }
   }
 
   /** Connection was closed: leave room, announce exit to others */
