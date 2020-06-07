@@ -75,7 +75,33 @@ class ChatUser {
     this.send(JSON.stringify({
       name: 'Members',
       type: 'command',
-      text: `${[...this.room.members].map(m => m.name).join(', ')}`
+      text: `${[...this.room.getMemberNames()].join(', ')}`
+    }));
+  }
+
+  /** handle private message command: send message to client and target client */
+
+  handleWhisper(target, text) {
+    if (!this.room.getMemberNames().has(target)) {
+      this.send(JSON.stringify({
+        name: 'ERROR',
+        type: 'error',
+        text: `${target} is not in the room`
+      }));
+      return;
+    }
+    // send message to origin
+    this.send(JSON.stringify({
+      name: `To ${target}`,
+      type: 'command',
+      text: text
+    }));
+    // send message to target
+    const toMember = this.room.getMember(target);
+    toMember.send(JSON.stringify({
+      name: `From ${this.name}`,
+      type: 'command',
+      text: text
     }));
   }
 
@@ -103,6 +129,10 @@ class ChatUser {
 
       case "members":
         this.handleMembers();
+        break;
+
+      case "private":
+        this.handleWhisper(msg.target, msg.text);
         break;
 
       default:

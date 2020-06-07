@@ -29,25 +29,35 @@ class Room {
 
   constructor(roomName) {
     this.name = roomName;
-    this.members = new Set();
+    this.members = {};
   }
 
   /** member joining a room. */
 
   join(member) {
-    this.members.add(member);
+    this.members[member.name] = member;
   }
 
   /** member leaving a room. */
 
   leave(member) {
-    this.members.delete(member);
+    delete this.members[member.name];
+  }
+
+  /* return a set of member names */
+  getMemberNames() {
+    return new Set(Object.keys(this.members));
+  }
+
+  /* return the specified member */
+  getMember(name) {
+    return this.members[name];
   }
 
   /** send message to all members in a room. */
 
   broadcast(data) {
-    for (let member of this.members) {
+    for (let member of Object.values(this.members)) {
       member.send(JSON.stringify(data));
     }
   }

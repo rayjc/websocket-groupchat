@@ -75,13 +75,21 @@ function processMessage(input) {
     return { type: "chat", text: input };
   }
 
-  const command = input.split(' ')[0];
+  const parts = input.split(' ');
+  const command = parts[0];
   switch (command) {
     case "/joke":
       return { type: "joke" };
 
     case "/members":
       return { type: "members" };
+
+    case "/priv":
+      return {
+        type: "private",
+        target: parts[1],
+        text: parts.slice(2).join(' ')
+      };
 
     default:
       console.error(`No such command, ${command}.`);
