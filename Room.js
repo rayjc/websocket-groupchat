@@ -35,7 +35,14 @@ class Room {
   /** member joining a room. */
 
   join(member) {
-    this.members[member.name] = member;
+    if (this.getMemberNames().has(member.name)) {
+      const name = `${member.name}-${new Date().getTime()}`;
+      this.members[name] = member;
+      return name;
+    } else {
+      this.members[member.name] = member;
+      return member.name;
+    }
   }
 
   /** member leaving a room. */

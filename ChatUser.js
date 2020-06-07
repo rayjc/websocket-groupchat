@@ -31,8 +31,9 @@ class ChatUser {
   /** handle joining: add to room members, announce join */
 
   handleJoin(name) {
-    this.name = name;
-    this.room.join(this);
+    this.name = (!!name) ? name : `user-${new Date().getTime()}`;
+    // overwrite name
+    this.name = this.room.join(this);
     this.room.broadcast({
       type: 'note',
       text: `${this.name} joined "${this.room.name}".`
