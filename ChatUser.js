@@ -55,18 +55,28 @@ class ChatUser {
     axios.get("https://icanhazdadjoke.com", { headers: { accept: 'application/json' } })
       .then(res => {
         this.send(JSON.stringify({
-          name: 'Server',
+          name: 'Joke',
           type: 'command',
           text: res.data.joke,
         }));
       })
       .catch(() => {
         this.send(JSON.stringify({
-          name: 'Server',
+          name: 'Joke',
           type: 'command',
           text: "Cannot come up with a joke at the moment; please try again later."
         }));
       });
+  }
+
+  /** handle members command: return list of members to client */
+
+  handleMembers() {
+    this.send(JSON.stringify({
+      name: 'Members',
+      type: 'command',
+      text: `${[...this.room.members].map(m => m.name).join(', ')}`
+    }));
   }
 
   /** Handle messages from client:
@@ -89,6 +99,10 @@ class ChatUser {
 
       case "joke":
         this.handleJoke();
+        break;
+
+      case "members":
+        this.handleMembers();
         break;
 
       default:

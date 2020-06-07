@@ -80,6 +80,9 @@ function processMessage(input) {
     case "/joke":
       return { type: "joke" };
 
+    case "/members":
+      return { type: "members" };
+
     default:
       console.error(`No such command, ${command}.`);
       displayMessage({
