@@ -106,6 +106,26 @@ class ChatUser {
     }));
   }
 
+  /** handle name-update command: broadcast name change */
+
+  handleNameUpdate(newName) {
+    const oldName = this.name;
+    this.room.leave(this);
+    this.name = newName;  // try to set the name to new name
+    this.name = this.room.join(this);   // overwrite name if exists
+    if (this.name !== newName) {
+      this.send(JSON.stringify({
+        name: 'Warning',
+        type: 'command',
+        text: `'${newName}' has been taken...`
+      }));
+    }
+    this.room.broadcast({
+      type: 'note',
+      text: `${oldName} has been renamed to ${this.name}`
+    });
+  }
+
   /** Handle messages from client:
    *
    * - {type: "join", name: username} : join
@@ -134,6 +154,10 @@ class ChatUser {
 
       case "private":
         this.handleWhisper(msg.target, msg.text);
+        break;
+
+      case "update-name":
+        this.handleNameUpdate(msg.name);
         break;
 
       default:

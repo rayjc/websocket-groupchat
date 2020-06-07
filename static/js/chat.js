@@ -91,6 +91,12 @@ function processMessage(input) {
         text: parts.slice(2).join(' ')
       };
 
+    case "/name":
+      return {
+        type: "update-name",
+        name: parts[1] || "",
+      };
+
     default:
       console.error(`No such command, ${command}.`);
       displayMessage({
